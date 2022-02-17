@@ -70,6 +70,8 @@ public class GraphUtils {
 
         NumberFormat formatter = new DecimalFormat("#0.00000");
         System.out.print("Execution time is " + formatter.format((endTime - startTime) / 1000d) + " seconds");
+
+        Node.writeCSV();
     }
 
     private static void findEdges() {

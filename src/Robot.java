@@ -27,7 +27,7 @@ public class Robot {
                     node.parent.robot.robotDirection == Direction.SOUTH && node.robot.robotDirection == Direction.EAST ||
                     node.parent.robot.robotDirection == Direction.EAST && node.robot.robotDirection == Direction.NORTH) {
                 GameState.getInstance().incrementNumActions(1);
-                actions.add("->\tTurned Left");
+                actions.add("After Left Turn");
                 node.turn = true;
                 return actions;
 
@@ -36,12 +36,13 @@ public class Robot {
                     node.parent.robot.robotDirection == Direction.SOUTH && node.robot.robotDirection == Direction.WEST ||
                     node.parent.robot.robotDirection == Direction.EAST && node.robot.robotDirection == Direction.SOUTH) {
                 GameState.getInstance().incrementNumActions(1);
-                actions.add("->\tTurned Right");
+                actions.add("After Right Turn");
                 node.turn = true;
                 return actions;
             } else{
-                actions.add("->\tTurned Right");
-                actions.add("->\tTurned Right");
+                actions.add("After Right Turn");
+                actions.add("After Right Turn");
+                actions.add("After Turning Around");
                 node.turn = true;
                 return actions;
             }

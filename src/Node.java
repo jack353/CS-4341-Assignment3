@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +22,11 @@ public class Node implements Comparable<Node> {
     Robot robot;
     public int turned2Prev;
     public boolean turn;
+
+    public static ArrayList<Integer> heuristic4 = new ArrayList<>();
+    public static ArrayList<Double> heuristic5 = new ArrayList<>();
+    public static ArrayList<Integer> verticalE = new ArrayList<>();
+    public static ArrayList<Integer> horizontalE = new ArrayList<>();
 
     Node(double h, int difficulty, int xPos, int yPos, Robot robot) {
         this.timeRemainingEstimate = h;
@@ -150,6 +156,10 @@ public class Node implements Comparable<Node> {
             case 4:
                 return Math.abs(yStart - yTarget) + Math.abs(xStart - xTarget);
             case 5:
+                heuristic4.add(Math.abs(yStart - yTarget) + Math.abs(xStart - xTarget));
+                heuristic5.add(Math.sqrt(verticalEstimate ^ 2 + horizontalEstimate ^ 2));
+                verticalE.add(verticalEstimate);
+                horizontalE.add(horizontalEstimate);
                 return Math.sqrt(verticalEstimate ^ 2 + horizontalEstimate ^ 2);
             default:
                 return (int) this.timeRemainingEstimate;
@@ -221,6 +231,14 @@ public class Node implements Comparable<Node> {
         return null;
     }
 
+    public static List<String> actions = new ArrayList<>();
+
+    public static List<Integer> xDistance = new ArrayList<>();
+    public static List<Integer> yDistance = new ArrayList<>();
+    public static List<Double> values = new ArrayList<>();
+
+    public static List<String> dataLines = new ArrayList<>();
+
     public static void printPath(Node target) {
 
         Node n = target;
@@ -236,27 +254,72 @@ public class Node implements Comparable<Node> {
         }
         nodes.add(0, n);
 
-        List<String> actions = new ArrayList<String>();
+        actions.add("At the Start");
 
         for (Node node : nodes) {
+
             actions = Robot.calculateTurn(node, actions);
 
+            if (node.turn){
+                if (actions.get(actions.size()-1).equals("After Turning Around")){
+                    actions.remove(actions.size()-1);
+                    values.add((double)node.parent.difficulty / 2);
+                    xDistance.add(Math.abs(target.xPos - node.parent.xPos));
+                    yDistance.add(Math.abs(target.yPos - node.parent.yPos));
+                }
+                values.add((double)node.parent.difficulty / 2);
+                xDistance.add(Math.abs(target.xPos - node.parent.xPos));
+                yDistance.add(Math.abs(target.yPos - node.parent.yPos));
+            }
+
             if (node.bash) {
-                actions.add("->\tBashed");
-                actions.add("->\tMoved Forward");
+                actions.add("After Bash");
+                actions.add("After Moving Forward");
+                values.add(3.0);
+
                 GameState.getInstance().incrementNumActions(2);
+
+                if (node.robot.robotDirection == Direction.NORTH || node.robot.robotDirection == Direction.SOUTH){
+                    yDistance.add(Math.abs(target.yPos - node.yPos) + 1);
+                    xDistance.add(Math.abs(target.xPos - node.xPos));
+                }
+                if (node.robot.robotDirection == Direction.WEST || node.robot.robotDirection == Direction.EAST) {
+                    xDistance.add(Math.abs(target.xPos - node.xPos) + 1);
+                    yDistance.add(Math.abs(target.yPos - node.yPos));
+                }
             }
 
             if(!node.bash && node != n){
-                actions.add("->\tMoved Forward");
+                actions.add("After Moving Forward");
                 GameState.getInstance().incrementNumActions(1);
             }
+
+            values.add((double)node.difficulty);
+            xDistance.add(Math.abs(target.xPos - node.xPos));
+            yDistance.add(Math.abs(target.yPos - node.yPos));
         }
-        actions.add("->\tReached goal!!");
         System.out.println("Starting at the start node, the robot performed these moves: ");
         for (String s : actions) {
             System.out.println(s);
         }
+
+        double costSoFar = 0;
+        double sum = sum(values);
+
+        for (int i = 0; i < actions.size(); i++){
+            costSoFar += values.get(i);
+            dataLines.add(actions.get(i) + "," + xDistance.get(i) + "," +
+                    yDistance.get(i) + "," + heuristic4.get(i) + "," + heuristic5.get(i) + "," +
+                    verticalE.get(i) + "," + horizontalE.get(i) + "," + (sum - costSoFar));
+        }
+
+        System.out.println();
+        System.out.println(actions.size());
+        System.out.println(xDistance.size());
+        System.out.println(yDistance.size());
+        System.out.println(values.size());
+        System.out.println();
+
         System.out.println();
         System.out.println("Score: \n" + (100 - target.timeTraveled));
         System.out.println();
@@ -266,5 +329,31 @@ public class Node implements Comparable<Node> {
         System.out.println("Number of nodes expanded:");
         System.out.println(GameState.getNumNodesExpanded());
         System.out.println();
+    }
+
+    public static void writeCSV() throws IOException {
+        File csvOutputFile = new File("assignment3Data.csv");
+        FileWriter fw = new FileWriter(csvOutputFile);
+        BufferedWriter bw = new BufferedWriter(fw);
+
+        bw.write("State,xDistance,yDistance,Heuristic 4,Heuristic 5,Cost to Goal");
+        bw.newLine();
+
+        for(int i=0;i<dataLines.size();i++)
+        {
+            bw.write(dataLines.get(i));
+
+            bw.newLine();
+        }
+
+        bw.close();
+        fw.close();
+    }
+
+    static double sum(List<Double> l){
+        double s = 0;
+        for (double i : l)
+            s+=i;
+        return s;
     }
 }
