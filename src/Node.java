@@ -25,8 +25,6 @@ public class Node implements Comparable<Node> {
 
     public static ArrayList<Integer> heuristic4 = new ArrayList<>();
     public static ArrayList<Double> heuristic5 = new ArrayList<>();
-    public static ArrayList<Integer> verticalE = new ArrayList<>();
-    public static ArrayList<Integer> horizontalE = new ArrayList<>();
 
     Node(double h, int difficulty, int xPos, int yPos, Robot robot) {
         this.timeRemainingEstimate = h;
@@ -48,7 +46,6 @@ public class Node implements Comparable<Node> {
         this.yPos = yPos;
         this.turned2Prev = 0;
     }
-
 
     @Override
     public int compareTo(Node n) {
@@ -125,7 +122,8 @@ public class Node implements Comparable<Node> {
             for (int i = xStart; i >= xTarget; i--) {
                 horizontalEstimate += graph[yStart][i].difficulty;
             }
-        } else if (xStart < xTarget) {
+        }
+        else if (xStart < xTarget) {
             if (robotDirection != Direction.EAST)
                 horizontalEstimate++;
             for (int i = xStart; i <= xTarget; i++) {
@@ -156,11 +154,14 @@ public class Node implements Comparable<Node> {
             case 4:
                 return Math.abs(yStart - yTarget) + Math.abs(xStart - xTarget);
             case 5:
-                heuristic4.add(Math.abs(yStart - yTarget) + Math.abs(xStart - xTarget));
                 heuristic5.add(Math.sqrt(verticalEstimate ^ 2 + horizontalEstimate ^ 2));
-                verticalE.add(verticalEstimate);
-                horizontalE.add(horizontalEstimate);
                 return Math.sqrt(verticalEstimate ^ 2 + horizontalEstimate ^ 2);
+            case 6:
+                return ((3.4572 * Math.abs(xStart - xTarget)) +
+                        (2.5421 * Math.abs(yStart - yTarget)) +
+                        (-0.8762 *
+                                Math.sqrt(Math.pow(Math.abs(target.xPos - this.xPos), 2) + Math.pow(Math.abs(target.yPos - this.yPos), 2))) +
+                        5.9052);
             default:
                 return (int) this.timeRemainingEstimate;
         }
@@ -181,9 +182,6 @@ public class Node implements Comparable<Node> {
 
         start.AStarEstimate = start.timeTraveled + start.calculateHeuristic(target, mode);
         toExpand.add(start);
-
-
-        int iter = 0;
 
         while (!toExpand.isEmpty()) {
             Node n = toExpand.peek();
@@ -237,7 +235,11 @@ public class Node implements Comparable<Node> {
     public static List<Integer> yDistance = new ArrayList<>();
     public static List<Double> values = new ArrayList<>();
 
+    public static List<Double> hypotenuse = new ArrayList<>();
+    public static List<Double> AEstimate = new ArrayList<>();
+
     public static List<String> dataLines = new ArrayList<>();
+    public static List<String> dataLines2 = new ArrayList<>();
 
     public static void printPath(Node target) {
 
@@ -266,10 +268,16 @@ public class Node implements Comparable<Node> {
                     values.add((double)node.parent.difficulty / 2);
                     xDistance.add(Math.abs(target.xPos - node.parent.xPos));
                     yDistance.add(Math.abs(target.yPos - node.parent.yPos));
+                    hypotenuse.add(Math.sqrt(Math.pow(Math.abs(target.xPos - node.xPos), 2) + Math.pow(Math.abs(target.yPos - node.yPos), 2)));
+                    heuristic4.add(Math.abs(target.xPos - node.xPos) + Math.abs(target.yPos - node.yPos));
+                    AEstimate.add(node.timeTraveled + Math.abs(node.yPos - target.yPos) + Math.abs(node.xPos - target.xPos));
                 }
                 values.add((double)node.parent.difficulty / 2);
                 xDistance.add(Math.abs(target.xPos - node.parent.xPos));
                 yDistance.add(Math.abs(target.yPos - node.parent.yPos));
+                hypotenuse.add(Math.sqrt(Math.pow(Math.abs(target.xPos - node.xPos), 2) + Math.pow(Math.abs(target.yPos - node.yPos), 2)));
+                heuristic4.add(Math.abs(target.xPos - node.xPos) + Math.abs(target.yPos - node.yPos));
+                AEstimate.add(node.timeTraveled + Math.abs(node.yPos - target.yPos) + Math.abs(node.xPos - target.xPos));
             }
 
             if (node.bash) {
@@ -282,10 +290,16 @@ public class Node implements Comparable<Node> {
                 if (node.robot.robotDirection == Direction.NORTH || node.robot.robotDirection == Direction.SOUTH){
                     yDistance.add(Math.abs(target.yPos - node.yPos) + 1);
                     xDistance.add(Math.abs(target.xPos - node.xPos));
+                    hypotenuse.add(Math.sqrt(Math.pow(Math.abs(target.xPos - node.xPos), 2) + Math.pow(Math.abs(target.yPos - node.yPos), 2)));
+                    heuristic4.add(Math.abs(target.xPos - node.xPos) + Math.abs(target.yPos - node.yPos));
+                    AEstimate.add(node.timeTraveled + Math.abs(node.yPos - target.yPos) + Math.abs(node.xPos - target.xPos));
                 }
                 if (node.robot.robotDirection == Direction.WEST || node.robot.robotDirection == Direction.EAST) {
                     xDistance.add(Math.abs(target.xPos - node.xPos) + 1);
                     yDistance.add(Math.abs(target.yPos - node.yPos));
+                    hypotenuse.add(Math.sqrt(Math.pow(Math.abs(target.xPos - node.xPos), 2) + Math.pow(Math.abs(target.yPos - node.yPos), 2)));
+                    heuristic4.add(Math.abs(target.xPos - node.xPos) + Math.abs(target.yPos - node.yPos));
+                    AEstimate.add(node.timeTraveled + Math.abs(node.yPos - target.yPos) + Math.abs(node.xPos - target.xPos));
                 }
             }
 
@@ -297,6 +311,9 @@ public class Node implements Comparable<Node> {
             values.add((double)node.difficulty);
             xDistance.add(Math.abs(target.xPos - node.xPos));
             yDistance.add(Math.abs(target.yPos - node.yPos));
+            hypotenuse.add(Math.sqrt(Math.pow(Math.abs(target.xPos - node.xPos), 2) + Math.pow(Math.abs(target.yPos - node.yPos), 2)));
+            heuristic4.add(Math.abs(target.xPos - node.xPos) + Math.abs(target.yPos - node.yPos));
+            AEstimate.add(node.timeTraveled + Math.abs(node.yPos - target.yPos) + Math.abs(node.xPos - target.xPos));
         }
         System.out.println("Starting at the start node, the robot performed these moves: ");
         for (String s : actions) {
@@ -309,16 +326,13 @@ public class Node implements Comparable<Node> {
         for (int i = 0; i < actions.size(); i++){
             costSoFar += values.get(i);
             dataLines.add(actions.get(i) + "," + xDistance.get(i) + "," +
-                    yDistance.get(i) + "," + heuristic4.get(i) + "," + heuristic5.get(i) + "," +
-                    verticalE.get(i) + "," + horizontalE.get(i) + "," + (sum - costSoFar));
+                    yDistance.get(i) + "," +
+                    hypotenuse.get(i) + "," + (sum - costSoFar));
         }
 
-        System.out.println();
-        System.out.println(actions.size());
-        System.out.println(xDistance.size());
-        System.out.println(yDistance.size());
-        System.out.println(values.size());
-        System.out.println();
+        double branchingF = Math.pow(GameState.getNumNodesExpanded(),(1/GameState.getNumActions()));
+
+        dataLines2.add(AStar.board + "," + GameState.getNumNodesExpanded() + "," + GameState.getNumActions() + "," + (100 - target.timeTraveled) + "," + branchingF);
 
         System.out.println();
         System.out.println("Score: \n" + (100 - target.timeTraveled));
@@ -329,6 +343,15 @@ public class Node implements Comparable<Node> {
         System.out.println("Number of nodes expanded:");
         System.out.println(GameState.getNumNodesExpanded());
         System.out.println();
+
+        values = new ArrayList<>();
+        actions = new ArrayList<>();
+        xDistance = new ArrayList<>();
+        yDistance = new ArrayList<>();
+        heuristic4 = new ArrayList<>();
+        heuristic5 = new ArrayList<>();
+        hypotenuse = new ArrayList<>();
+        AEstimate = new ArrayList<>();
     }
 
     public static void writeCSV() throws IOException {
@@ -336,12 +359,31 @@ public class Node implements Comparable<Node> {
         FileWriter fw = new FileWriter(csvOutputFile);
         BufferedWriter bw = new BufferedWriter(fw);
 
-        bw.write("State,xDistance,yDistance,Heuristic 4,Heuristic 5,Cost to Goal");
+        bw.write("State,xDistance,yDistance,Heuristic 4,Heuristic 5,hypotenuse,A* Estimate,Cost to Goal");
         bw.newLine();
 
         for(int i=0;i<dataLines.size();i++)
         {
             bw.write(dataLines.get(i));
+
+            bw.newLine();
+        }
+
+        bw.close();
+        fw.close();
+    }
+
+    public static void writeCSV2(Node target) throws IOException {
+        File csvOutputFile = new File("Heuristic7Results.csv");
+        FileWriter fw = new FileWriter(csvOutputFile);
+        BufferedWriter bw = new BufferedWriter(fw);
+
+        bw.write("Board,Nodes Expanded,Actions,Score,Branching Factor");
+        bw.newLine();
+
+        for(int i=0;i<dataLines2.size();i++)
+        {
+            bw.write(dataLines2.get(i));
 
             bw.newLine();
         }
