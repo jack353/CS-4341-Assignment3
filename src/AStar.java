@@ -11,7 +11,7 @@ public class AStar {
     public static void main(String[] args) {
         // Main code block initiating execution
 
-        for (int i = 1; i < 601; i++) {
+        for (int i = 1; i < 11; i++) {
             String file = "boards/board" + i + ".txt";
 
             board = "board" + i;

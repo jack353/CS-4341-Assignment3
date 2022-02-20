@@ -4,8 +4,8 @@ import java.util.List;
 
 public class GameState {
     private static GameState instance = null;
-    private static int numActions = 0;
-    private static int numNodesExpanded = 0;
+    public static int numActions = 0;
+    public static int numNodesExpanded = 0;
 
     /**
      * The constructor for GameState.

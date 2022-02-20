@@ -93,7 +93,10 @@ public class Node implements Comparable<Node> {
                 return calculateProvided(target, 5);
             case 6:
                 // Mode: 'TBA' that is non-admissible by multiplying 'sum' by 3
+                System.out.println();
                 return 3 * calculateProvided(target, 5);
+            case 7:
+                return calculateProvided(target, 6);
             default:
                 return this.timeRemainingEstimate;
 
@@ -154,8 +157,7 @@ public class Node implements Comparable<Node> {
             case 4:
                 return Math.abs(yStart - yTarget) + Math.abs(xStart - xTarget);
             case 5:
-                heuristic5.add(Math.sqrt(verticalEstimate ^ 2 + horizontalEstimate ^ 2));
-                return Math.sqrt(verticalEstimate ^ 2 + horizontalEstimate ^ 2);
+                return h4helper(target);
             case 6:
                 return ((3.4572 * Math.abs(xStart - xTarget)) +
                         (2.5421 * Math.abs(yStart - yTarget)) +
@@ -165,6 +167,37 @@ public class Node implements Comparable<Node> {
             default:
                 return (int) this.timeRemainingEstimate;
         }
+    }
+
+    double h4helper(Node target){
+        // acquire desired x and y positioning
+        int xTarget = target.xPos;
+        int yTarget = target.yPos;
+
+        // start x and y pos
+        int xStart = this.xPos;
+        int yStart = this.yPos;
+
+        // take note of robot positioning at current node
+        Direction startDirection = this.robot.robotDirection;
+        Direction robotDirection = startDirection;
+
+        if (xStart > xTarget) {
+            if (robotDirection != Direction.WEST)
+                return Math.max(Math.abs(yStart - yTarget), Math.abs(xStart - xTarget)) + 1;
+        }
+        else if (xStart < xTarget) {
+            if (robotDirection != Direction.EAST)
+                return Math.max(Math.abs(yStart - yTarget), Math.abs(xStart - xTarget)) + 1;
+        }
+        if (yStart > yTarget) {
+            if (robotDirection != Direction.NORTH)
+                return Math.max(Math.abs(yStart - yTarget), Math.abs(xStart - xTarget)) + 1;
+        } else if (yStart < yTarget) {
+            if (robotDirection != Direction.SOUTH)
+                return Math.max(Math.abs(yStart - yTarget), Math.abs(xStart - xTarget)) + 1;
+        }
+        return Math.max(Math.abs(yStart - yTarget), Math.abs(xStart - xTarget));
     }
 
     /**
@@ -330,7 +363,7 @@ public class Node implements Comparable<Node> {
                     hypotenuse.get(i) + "," + (sum - costSoFar));
         }
 
-        double branchingF = Math.pow(GameState.getNumNodesExpanded(),(1/GameState.getNumActions()));
+        double branchingF = Math.pow((double)GameState.getNumNodesExpanded(),(1/(double)GameState.getNumActions()));
 
         dataLines2.add(AStar.board + "," + GameState.getNumNodesExpanded() + "," + GameState.getNumActions() + "," + (100 - target.timeTraveled) + "," + branchingF);
 
@@ -352,6 +385,9 @@ public class Node implements Comparable<Node> {
         heuristic5 = new ArrayList<>();
         hypotenuse = new ArrayList<>();
         AEstimate = new ArrayList<>();
+
+        GameState.numActions = 0;
+        GameState.numNodesExpanded = 0;
     }
 
     public static void writeCSV() throws IOException {
